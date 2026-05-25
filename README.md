@@ -1,103 +1,71 @@
-# EN → UZ Neural Translator
+# EN → UZ Translator
 
-A **Seq2Seq translation web app** (English → Uzbek) built with:
-- **PyTorch** — Bidirectional GRU Encoder + Attention + GRU Decoder
-- **FastAPI** — REST API backend
-- **Vanilla HTML/CSS/JS** — Professional green-themed single-page frontend
+A small web app that translates English text into Uzbek. Built a Seq2Seq model from scratch using PyTorch, then wrapped it in a FastAPI backend with a simple frontend.
 
 ---
+![alt text](pics/view.png)
+---
 
-## Project Structure
+## How it works
+
+The model is a classic Seq2Seq architecture — bidirectional GRU encoder, attention mechanism, and a GRU decoder. Trained on an English-Uzbek parallel corpus (~100k sentence pairs).
 
 ```
-en_uz_translator/
-│
-├── app/
-│   ├── __init__.py
-│   └── model.py          ← Encoder, Attention, Decoder, Seq2Seq, translate_sentence()
-│
-├── templates/
-│   └── index.html        ← Frontend (green dark theme)
-│
-├── static/               ← (empty, reserved for future assets)
-│
-├── saved_model/
-│   └── full_seq2seq_checkpoint.pth   ← Your trained model (add manually)
-│
-├── main.py               ← FastAPI app entry point
-├── requirements.txt
-├── .gitignore
-└── README.md
+English input
+     ↓
+Bidirectional GRU Encoder
+     ↓
+Attention
+     ↓
+GRU Decoder
+     ↓
+Uzbek output
 ```
 
 ---
 
-## Quick Start
+## Stack
 
-### 1. Clone the repo
+- **PyTorch** — model training and inference
+- **FastAPI** — backend API
+- **HTML/CSS/JS** — single page frontend
+
+---
+
+## Run locally
 
 ```bash
 git clone https://github.com/Sanjarbek1024/en_uz_translator.git
 cd en_uz_translator
-```
 
-### 2. Create virtual environment
-
-```bash
 python -m venv venv
+venv\Scripts\activate       # Windows
+source venv/bin/activate    # Mac/Linux
 
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-### 4. Add your model checkpoint
-
-Copy your trained checkpoint into the `saved_model/` folder:
-
+Download the model checkpoint and place it here:
 ```
 saved_model/full_seq2seq_checkpoint.pth
 ```
 
-This is the file saved by the training notebook:
-```python
-torch.save(checkpoint, "saved_model/full_seq2seq_checkpoint.pth")
-```
-
-### 5. Run the server
-
+Then start the server:
 ```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open: [http://localhost:8000](http://localhost:8000)
+Open `http://localhost:8000` in your browser.
 
 ---
 
-## API Endpoints
+## API
 
-| Method | Path         | Description              |
-|--------|--------------|--------------------------|
-| GET    | `/`          | Serves the frontend HTML |
-| POST   | `/translate` | Translate EN → UZ        |
-| GET    | `/health`    | Model status check       |
-
-### POST /translate
-
-**Request:**
-```json
+```
+POST /translate
 { "text": "Indeed, Allah is Forgiving and Merciful." }
 ```
 
-**Response:**
 ```json
 {
   "input": "Indeed, Allah is Forgiving and Merciful.",
@@ -108,68 +76,10 @@ Open: [http://localhost:8000](http://localhost:8000)
 
 ---
 
-## Keyboard Shortcut
+## Notes
 
-Press `Ctrl + Enter` (or `Cmd + Enter` on Mac) to translate.
-
----
-
-## GitHub Deploy
-
-```bash
-# First time
-git init
-git add .
-git commit -m "Initial commit — EN→UZ translator app"
-git branch -M main
-git remote add origin https://github.com/Sanjarbek1024/en_uz_translator.git
-git push -u origin main
-
-# After changes
-git add .
-git commit -m "Update: describe your change"
-git push
-```
-
-> **Note:** The model checkpoint (`.pth`) is excluded from git via `.gitignore`
-> because it is a large binary file. Host it on Google Drive, Hugging Face Hub,
-> or similar and document the download link here.
+The model was trained for 5 epochs on short sentences (max 30 tokens), so it works best on simple, clean input. Longer or complex sentences may not translate well — that's expected for a first version.
 
 ---
 
-## Model Architecture
-
-```
-Input (English)
-       ↓
-  Embedding Layer
-       ↓
- Bidirectional GRU  (Encoder)
-       ↓
-  Attention Layer   (scores over encoder outputs)
-       ↓
-    GRU Decoder     (one token at a time)
-       ↓
-  Linear (fc_out)
-       ↓
-Output (Uzbek)
-```
-
-**Hyperparameters:**
-| Parameter       | Value |
-|-----------------|-------|
-| EMBED_SIZE      | 256   |
-| HIDDEN_SIZE     | 256   |
-| NUM_LAYERS      | 1     |
-| DROPOUT         | 0.3   |
-| MAX_LENGTH      | 30    |
-| BATCH_SIZE      | 128   |
-
----
-
-![alt text](saved_model/training_curve.png)
----
-## Author
-
-**Sanjarbek Gulomjonov** — AI & Data Engineering student
-
+Made by [Sanjarbek G'ulomjonov](https://github.com/Sanjarbek1024)
