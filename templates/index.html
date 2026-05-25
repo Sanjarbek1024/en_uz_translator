@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EN → UZ Translator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --bg:          #f8fafc;
+      --surface:     #ffffff;
+      --surface2:    #f1f5f9;
+      --border:      #e2e8f0;
+      --border-focus:#3b82f6;
+      --blue:        #3b82f6;
+      --blue-dark:   #2563eb;
+      --blue-light:  #eff6ff;
+      --blue-mid:    #dbeafe;
+      --text:        #0f172a;
+      --text-2:      #475569;
+      --text-3:      #94a3b8;
+      --error:       #ef4444;
+      --success:     #10b981;
+      --mono:        'JetBrains Mono', monospace;
+      --sans:        'Inter', sans-serif;
+      --radius:      14px;
+      --shadow-sm:   0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:   0 4px 16px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg:   0 12px 40px rgba(0,0,0,.09), 0 2px 8px rgba(0,0,0,.05);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ───────────────────────────────────────────── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0; z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -.01em;
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--blue);
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pill {
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: .04em;
+    }
+
+    /* ── Main ─────────────────────────────────────────────── */
+    .wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 24px 72px;
+    }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      margin-bottom: 44px;
+      animation: fadeUp .5s ease both;
+    }
+
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 600;
+      letter-spacing: -.03em;
+      color: var(--text);
+      line-height: 1.15;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--blue);
+    }
+
+    .hero p {
+      margin-top: 10px;
+      font-size: 15px;
+      color: var(--text-2);
+      font-weight: 400;
+    }
+
+    /* ── Card ─────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: fadeUp .5s .08s ease both;
+    }
+
+    /* ── Lang header ──────────────────────────────────────── */
+    .lang-header {
+      display: grid;
+      grid-template-columns: 1fr 48px 1fr;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .lang-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+    }
+
+    .lang-label.active { color: var(--blue-dark); }
+
+    .lang-label .flag { font-size: 18px; }
+
+    .lang-arrow {
+      display: grid;
+      place-items: center;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      color: var(--blue);
+      font-size: 17px;
+    }
+
+    /* ── Panels ───────────────────────────────────────────── */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media(max-width:600px) {
+      .panels { grid-template-columns: 1fr; }
+      .panel-src { border-right: none !important; border-bottom: 1px solid var(--border); }
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 220px;
+    }
+
+    .panel-src { border-right: 1px solid var(--border); }
+
+    textarea {
+      flex: 1;
+      padding: 22px;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.7;
+      color: var(--text);
+      caret-color: var(--blue);
+    }
+
+    textarea::placeholder { color: var(--text-3); }
+
+    .output-area {
+      flex: 1;
+      padding: 22px;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--blue-dark);
+      font-weight: 400;
+      word-break: break-word;
+      background: var(--blue-light);
+    }
+
+    .output-area.empty {
+      color: var(--text-3);
+      font-size: 15px;
+    }
+
+    /* ── Panel footer ─────────────────────────────────────── */
+    .panel-foot {
+      padding: 10px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .char-count {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .btn-sm {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: var(--sans);
+      color: var(--text-2);
+      padding: 5px 13px;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+
+    .btn-sm:hover { color: var(--blue); border-color: var(--blue); background: var(--blue-light); }
+    .btn-sm.copied { color: var(--success); border-color: var(--success); }
+    .btn-sm.danger:hover { color: var(--error); border-color: var(--error); background: #fef2f2; }
+
+    /* ── Action bar ───────────────────────────────────────── */
+    .action-bar {
+      padding: 18px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+    }
+
+    #status {
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text-3);
+    }
+
+    #status.err { color: var(--error); }
+    #status.ok  { color: var(--success); }
+
+    .btn-translate {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      background: var(--blue);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 11px 28px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(59,130,246,.30);
+      transition: background .15s, box-shadow .15s, transform .1s;
+    }
+
+    .btn-translate:hover:not(:disabled) {
+      background: var(--blue-dark);
+      box-shadow: 0 4px 16px rgba(59,130,246,.40);
+      transform: translateY(-1px);
+    }
+
+    .btn-translate:active:not(:disabled) { transform: translateY(0); }
+
+    .btn-translate:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Loading dots ─────────────────────────────────────── */
+    .dots span {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+      margin: 0 2px;
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+    .dots span:nth-child(2) { animation-delay: .2s; }
+    .dots span:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes bounce {
+      0%,80%,100% { transform: scale(.6); opacity: .3; }
+      40%         { transform: scale(1);  opacity: 1;  }
+    }
+
+    /* ── Examples ─────────────────────────────────────────── */
+    .examples {
+      margin-top: 32px;
+      animation: fadeUp .5s .16s ease both;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 12px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 13px;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s, box-shadow .15s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chip:hover {
+      color: var(--blue-dark);
+      border-color: var(--blue);
+      background: var(--blue-light);
+      box-shadow: 0 2px 8px rgba(59,130,246,.12);
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      margin-top: 56px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+      animation: fadeUp .5s .24s ease both;
+    }
+
+    footer strong { color: var(--text-2); font-weight: 500; }
+
+    /* ── Animations ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .fade-in { animation: fadeUp .35s ease both; }
+  </style>
+</head>
+
+<body>
+
+<!-- Topbar -->
+<nav class="topbar">
+  <div class="logo">
+    <div class="logo-icon">T</div>
+    EN→UZ Translator
+  </div>
+  <span class="pill">Seq2Seq · GRU · Attention</span>
+</nav>
+
+<!-- Main -->
+<div class="wrapper">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>English to <em>O'zbek</em> Translation</h1>
+    <p>Neural machine translation — Bidirectional GRU encoder with attention</p>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- Language header -->
+    <div class="lang-header">
+      <div class="lang-label active">
+        <span class="flag">🇺🇸</span> English
+      </div>
+      <div class="lang-arrow">→</div>
+      <div class="lang-label active">
+        <span class="flag">🇺🇿</span> O'zbek
+      </div>
+    </div>
+
+    <!-- Panels -->
+    <div class="panels">
+
+      <!-- Input -->
+      <div class="panel panel-src">
+        <textarea
+          id="input-text"
+          placeholder="Enter English text here…"
+          maxlength="500"
+          autocomplete="off"
+          spellcheck="false"
+        ></textarea>
+        <div class="panel-foot">
+          <span class="char-count"><span id="char-count">0</span> / 500</span>
+          <button class="btn-sm danger" onclick="clearInput()">Clear</button>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div class="panel">
+        <div id="output-area" class="output-area empty">
+          Translation will appear here…
+        </div>
+        <div class="panel-foot">
+          <span class="char-count" id="device-info"></span>
+          <button class="btn-sm" id="copy-btn" onclick="copyOutput()">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="action-bar">
+      <span id="status">Ready · Ctrl+Enter to translate</span>
+      <button class="btn-translate" id="translate-btn" onclick="doTranslate()">
+        Translate →
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Examples -->
+  <div class="examples">
+    <div class="section-label">Try an example</div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <footer>
+    Built by <strong>Sanjarbek G'ulomjonov</strong> &nbsp;·&nbsp;
+    FastAPI + PyTorch &nbsp;·&nbsp; EN→UZ Seq2Seq
+  </footer>
+
+</div>
+
+<script>
+  const EXAMPLES = [
+    "Indeed, Allah is Forgiving and Merciful.",
+    "God repelled the unbelievers in their rage.",
+    "These our people have taken other gods.",
+    "So bring our fathers, if you are truthful.",
+    "That it is He who causes to laugh and weep.",
+    "Blessed is He in whose hand is dominion.",
+  ];
+
+  // Chips
+  const chipsEl = document.getElementById("chips");
+  EXAMPLES.forEach(txt => {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.textContent = txt;
+    chip.onclick = () => {
+      document.getElementById("input-text").value = txt;
+      updateCharCount();
+      doTranslate();
+    };
+    chipsEl.appendChild(chip);
+  });
+
+  // Char counter
+  const inputEl = document.getElementById("input-text");
+  function updateCharCount() {
+    document.getElementById("char-count").textContent = inputEl.value.length;
+  }
+  inputEl.addEventListener("input", updateCharCount);
+
+  // Ctrl+Enter
+  inputEl.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") doTranslate();
+  });
+
+  // Translate
+  async function doTranslate() {
+    const text = inputEl.value.trim();
+    if (!text) { setStatus("Please enter some text first.", "err"); return; }
+
+    const btn   = document.getElementById("translate-btn");
+    const outEl = document.getElementById("output-area");
+    btn.disabled = true;
+    outEl.className = "output-area";
+    outEl.innerHTML = '<div class="dots"><span></span><span></span><span></span></div>';
+    setStatus("Translating…");
+
+    try {
+      const res = await fetch("/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Server error");
+      }
+
+      const data = await res.json();
+      outEl.className = "output-area fade-in";
+      outEl.textContent = data.translation;
+      setStatus("Done", "ok");
+      document.getElementById("device-info").textContent = data.device;
+
+    } catch (err) {
+      outEl.className = "output-area empty";
+      outEl.textContent = "Translation failed.";
+      setStatus(err.message, "err");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function setStatus(msg, cls = "") {
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    el.className = cls;
+  }
+
+  function clearInput() {
+    inputEl.value = "";
+    updateCharCount();
+    const outEl = document.getElementById("output-area");
+    outEl.className = "output-area empty";
+    outEl.textContent = "Translation will appear here…";
+    document.getElementById("device-info").textContent = "";
+    setStatus("Ready · Ctrl+Enter to translate");
+  }
+
+  function copyOutput() {
+    const text = document.getElementById("output-area").textContent;
+    if (!text || text.includes("Translation will appear")) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById("copy-btn");
+      btn.textContent = "Copied ✓";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>

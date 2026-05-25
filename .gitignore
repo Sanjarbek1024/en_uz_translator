@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Model checkpoint (large binary — do NOT commit to git)
+saved_model/*.pth
+saved_model/*.pt
+saved_model/*.bin
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Env vars
+.env
+.env.local
