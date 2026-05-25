@@ -1,8 +1,3 @@
-"""
-EN → UZ Seq2Seq Translation API
-FastAPI backend
-"""
-
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -22,7 +17,7 @@ from app.model import (
     translate_sentence,
 )
 
-# ─── Paths ────────────────────────────────────────────────────────────────────
+# Paths
 # BASE_DIR = folder where main.py lives (the project root)
 BASE_DIR = Path(__file__).resolve().parent
 CHECKPOINT_PATH = BASE_DIR / "saved_model" / "full_seq2seq_checkpoint.pth"
@@ -32,11 +27,11 @@ STATIC_DIR = BASE_DIR / "static"
 # Create static/ if it doesn't exist yet
 STATIC_DIR.mkdir(exist_ok=True)
 
-# ─── Global state ─────────────────────────────────────────────────────────────
+# Global state
 state: dict = {}
 
 
-# ─── Lifespan: load model once at startup ─────────────────────────────────────
+# Lifespan: load model once at startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -98,7 +93,7 @@ async def lifespan(app: FastAPI):
     state.clear()
 
 
-# ─── App ──────────────────────────────────────────────────────────────────────
+# App
 app = FastAPI(
     title="EN→UZ Translator",
     description="Seq2Seq GRU + Attention translation model",
@@ -116,7 +111,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
-# ─── Schemas ──────────────────────────────────────────────────────────────────
+# Schemas
 class TranslateRequest(BaseModel):
     text: str
 
@@ -127,7 +122,7 @@ class TranslateResponse(BaseModel):
     device: str
 
 
-# ─── Routes ───────────────────────────────────────────────────────────────────
+# Routes
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     return TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -167,3 +162,4 @@ async def health():
         "model_loaded": state.get("model") is not None,
         "device": str(state.get("device", "unknown")),
     }
+

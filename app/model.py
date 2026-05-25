@@ -1,22 +1,16 @@
-"""
-Seq2Seq Model — Bidirectional GRU Encoder + Attention + GRU Decoder
-EN → UZ Translation
-"""
-
 import re
 import unicodedata
-
 import torch
 import torch.nn as nn
 
-# ─── Special tokens ───────────────────────────────────────────────────────────
+# Special tokens
 PAD_TOKEN = 0
 SOS_TOKEN = 1
 EOS_TOKEN = 2
 UNK_TOKEN = 3
 
 
-# ─── Text normalizer ──────────────────────────────────────────────────────────
+# Text normalizer
 def normalize_string(text: str) -> str:
     text = str(text).lower().strip()
     text = unicodedata.normalize("NFKC", text)
@@ -24,7 +18,7 @@ def normalize_string(text: str) -> str:
     return text.strip()
 
 
-# ─── Encoder ──────────────────────────────────────────────────────────────────
+# Encoder
 class Encoder(nn.Module):
     def __init__(self, input_dim, embed_size, hidden_size, num_layers, dropout):
         super().__init__()
@@ -51,7 +45,7 @@ class Encoder(nn.Module):
         return outputs, hidden
 
 
-# ─── Attention ────────────────────────────────────────────────────────────────
+# Attention
 class Attention(nn.Module):
     def __init__(self, hidden_size):
         super().__init__()
@@ -66,7 +60,7 @@ class Attention(nn.Module):
         return torch.softmax(self.v(energy).squeeze(2), dim=1)
 
 
-# ─── Decoder ──────────────────────────────────────────────────────────────────
+# Decoder
 class Decoder(nn.Module):
     def __init__(self, output_dim, embed_size, hidden_size, num_layers, dropout, attention):
         super().__init__()
@@ -100,7 +94,7 @@ class Decoder(nn.Module):
         return prediction, hidden
 
 
-# ─── Seq2Seq ──────────────────────────────────────────────────────────────────
+# Seq2Seq
 class Seq2Seq(nn.Module):
     def __init__(self, encoder, decoder, device):
         super().__init__()
@@ -123,7 +117,7 @@ class Seq2Seq(nn.Module):
         return outputs
 
 
-# ─── Inference helper ─────────────────────────────────────────────────────────
+# Inference helper
 def translate_sentence(
     model: Seq2Seq,
     sentence: str,
